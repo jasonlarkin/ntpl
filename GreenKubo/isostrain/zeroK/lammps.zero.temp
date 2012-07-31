@@ -1,0 +1,75 @@
+log MAIN_LOG_FILE
+## ## ## Kevin Parrish - 5/15/12 - Test Program ## ## ##
+## ## ## Run GK on Crytal structure at 15K		## ## ##
+## ## ## using 5 initial conditions				## ## ##
+
+# Lennard-Jones Melt
+#------------Prepare Geometry---------------------------------------------------------------
+units			lj
+atom_style		atomic
+read_data		in.data.4
+#------------Initialize Structure-----------------------------------------------------------
+#mass           1  1.0
+#group         	Ar type = 1
+#------------LJ Potentials------------------------------------------------------------------
+pair_style		lj/cut 2.5
+pair_coeff		* * 1.0 1.0
+pair_modify		shift yes
+#pair_modify   	tail no
+#------------Variables----------------------------------------------------------------------
+#------------LJ Parameters
+variable    kB 			equal 1.3806504e-23 	# [J/K] Boltzmann
+variable	sigma_Ar 	equal 3.4e-10 		# m
+variable	eps_Ar		equal 1.67e-21		# J
+variable	mass_Ar		equal 6.63e-26		# kg
+variable	tau_Ar		equal 2.1423e-12	# s
+#------------thermo Parameters
+variable	TEMP		equal 0
+variable   	dt 		equal 0.002
+#------------kappa parameters
+variable    	p 		equal 1 		# correlation length
+variable    	s 		equal 1 		# sample interval
+variable    	d 		equal $p*$s 		# dump interval 
+
+#LIQUID_PARAM
+
+###GK ON RELAXED CRYSTAL STATE
+
+#------------ NVE Heat -----------------------------------------------------------------------
+#	velocity		all create ${TEMP} 11111 dist gaussian mom yes
+	fix 			1 all nve
+#----------Calculate Cell Size-----------------------------------------------------------	
+	variable  		myLx equal xhi-xlo
+	fix 			myLx all ave/time 1 1 1 v_myLx file OUT_VOLUME
+#	variable		myLx2 equal f_myLx
+	variable		lengthStrainX equal (STRAIN_PARAM+1)*f_myLx
+	thermo_style  	custom step temp press etotal pe ke vol
+	thermo			10
+	run				10
+#	run				100000
+	unfix 			1
+	fix 			deform all deform 1 x final 0.0 ${lengthStrainX} y final 0.0 ${lengthStrainX} z final 0.0 ${lengthStrainX} units box remap x
+	run				10
+	unfix			deform
+	unfix			myLx	
+#------------ NVE -----------------------------------------------------------------------------	
+	fix 			1 all nve
+	compute   		myTemp all temp
+	compute			myPressure all pressure myTemp
+	variable		St equal c_myPressure
+	variable		Sx equal c_myPressure[1]
+	variable		Sy equal c_myPressure[2]
+	variable		Sz equal c_myPressure[3]
+	dump					APos all xyz 1025000 OUT_POS
+	thermo_style	custom step temp press vol
+	fix 			myStrain all ave/time ${s} ${p} ${d} v_myLx v_St v_Sx v_Sy v_Sz file OUT_STRAIN ave running
+	thermo			10
+	timestep		${dt}
+	run			10
+#	run			10000
+
+	unfix			1
+	uncompute		myTemp
+	uncompute		myPressure
+	undump			APos
+	unfix			myStrain
