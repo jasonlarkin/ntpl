@@ -36,8 +36,8 @@ for istrain in range(numStrains):
 				cmd4 = ''
 	
 			## ## ## Change input file
-			orig = 'IN_DATA'
-			new  = 'in.data.' + str(itemp)
+			orig = 'IN_POS'
+			new  = 'in.pos.' + str(itemp)
 			cmd5 = '-e \'s/' + orig + '/' + new + '/g\' '
 		
 			## ## ## Change output file
@@ -71,7 +71,7 @@ for istrain in range(numStrains):
 			cmd11 = '-e \'s/' + orig + '/' + new + '/g\' '
 		
 			## ## ## Execute Command
-			os.system('sed '+ cmd1+ cmd2+ cmd3+ cmd4+ cmd5+ cmd6+ cmd7+ cmd8+ cmd9+ cmd10+ cmd11+ 'in.lammps.temp > ./in.lammps.'+ str(iseed)+ '.'+ str(itemp)+ '.'+ str(istrain))
+			os.system('sed '+ cmd1+ cmd2+ cmd3+ cmd4+ cmd5+ cmd6+ cmd7+ cmd8+ cmd9+ cmd10+ cmd11+ 'lammps.temp > ./in.lammps.'+ str(iseed)+ '.'+ str(itemp)+ '.'+ str(istrain))
 
 			#sed -e 's/\<POS_IN_STRUCTURE\>/in_structure_1.pos/g' -e 's/\<OUT_CORR\>/out.GK.LJ.corr.1/g' in.GK.LJ > ./in.GK.LJ.1
 ## ## ## END FILE
