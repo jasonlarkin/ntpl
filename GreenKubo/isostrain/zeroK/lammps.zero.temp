@@ -53,6 +53,7 @@ variable    	d 		equal $p*$s 		# dump interval
 	unfix			deform
 	unfix			myLx	
 #------------ NVE -----------------------------------------------------------------------------	
+	reset_timestep 0
 	fix 			1 all nve
 	compute   		myTemp all temp
 	compute			myPressure all pressure myTemp
@@ -62,7 +63,7 @@ variable    	d 		equal $p*$s 		# dump interval
 	variable		Sz equal c_myPressure[3]
 	dump					APos all xyz 1025000 OUT_POS
 	thermo_style	custom step temp press vol
-	fix 			myStrain all ave/time ${s} ${p} ${d} v_myLx v_St v_Sx v_Sy v_Sz file OUT_STRAIN ave running
+	fix 			myStrain all ave/time ${s} ${p} ${d} v_St v_Sx v_Sy v_Sz file OUT_STRAIN ave running
 	thermo			10
 	timestep		${dt}
 	run			10

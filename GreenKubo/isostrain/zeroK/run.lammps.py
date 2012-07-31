@@ -15,9 +15,9 @@ for istrain in range(17):
 #	print 'sed ' + cmd1 + cmd2 + 'lmp_GK_KDP.sh > ./lmp_GK_KDP_' + str(a + 1) + '.sh' #for debugging
 		
 	## ## ## Execute sed command
-	os.system('sed ' + cmd1 + cmd2 + 'lammps.script.temp > ./lammps_' + str(istrain) + '.sh')
+	os.system('sed ' + cmd1 + cmd2 + 'lammps.script.temp > ./tmp.lammps.script.' + str(istrain) + '.sh')
 	#sed -e 's/\<POS_IN_STRUCTURE\>/in_structure_1.pos/g' -e 's/\<OUT_CORR\>/out.GK.LJ.corr.1/g' lmp_GK_KDP.sh > ./lmp_GK_KDP_1.sh
 			
 	## ## ## Execute qsub shell script
-	os.system('qsub -p -1000 lammps_' + str(istrain) + '.sh')
+	os.system('qsub -p -1000 tmp.lammps.script.' + str(istrain) + '.sh')
 ## ## ## END FILE
