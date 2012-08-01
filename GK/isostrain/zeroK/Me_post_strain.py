@@ -34,19 +34,20 @@ Me_total_steps = 10
 Me_strains = [-.12, -.10, -.08, -.06, -.04, -.02, -.01, 0, .005, .01, .015, .02, .04, .06, .08, .10, .12]
 ##### END Me params
 
-Me_num_strains = len(GK_strains)
+Me_num_strains = len(Me_strains)
 
-Me_stress = np.zeros( (GK_num_strains), dtype=float)
-Me_volume = np.zeros( (GK_num_strains), dtype=float )
+Me_stress = np.zeros( (Me_num_strains), dtype=float)
+Me_volume = np.zeros( (Me_num_strains), dtype=float )
 
 ## ## ## Average the volume
+for istrain in range(Me_num_strains):
 	str_read = 'out.lammps.vol.'+ str(istrain)
 	dummy_array = np.loadtxt(str_read, comments='#')
-	GK_volume[itemp,istrain] = GK_volume[itemp,istrain]+ dummy_array[dummy_array[:,0].size - 1,1]**3	## NEED to access last element and * by 3
+	Me_volume[istrain] = Me_volume[istrain]+ dummy_array[dummy_array[:,0].size - 1,1]**3	## NEED to access last element and * by 3
 ##### END VOLUME LOOP
 
 ## ## ## Loop over Strains
-for istrain in range(GK_num_strains):
+for istrain in range(Me_num_strains):
 	str_read = 'out.lammps.strain.'+ str(istrain)
 	dummy_array = np.loadtxt(str_read, comments='#')
 	Me_stress[istrain] = (-1) * dummy_array[dummy_array[:, 0] - 1,2]
@@ -54,7 +55,7 @@ for istrain in range(GK_num_strains):
 
 ## ## ## Print lattice constants
 tlattice = np.zeros( (Me_volume[:].size), dtype=float)
-for istrain in range(GK_num_strains):
+for istrain in range(Me_num_strains):
 	tlattice[istrain] = np.power(GK_volume[istrain],(1/3))
 	#print 'Lattice vector for strain = '+ str(GK_strains[istrain])+	' and temp = '+ str(GK_temps[itemp])+ 'K is ['+ str(tlattice[itemp,istrain])+ ', '+ str(tlattice[itemp,istrain])+ ', '+ str(tlattice[itemp,istrain])+ ']'
 
@@ -74,25 +75,3 @@ np.save('../post/post.zero.volume.npy', Me_volume)
 ## ## ## Save kappa to file
 np.save('post/post.kappa.npy', kappa)
 
-## ## ## Find Young's Modulus
-def hook(m, x):
-	return m*x
-
-def resid(m, x, y):
-	return y - hook(m, x)
-
-young = np.zeros( (GK_num_temps) ) #array to hold young's moduli
-
-loweps = 7 #index of low strain inclusive
-higheps = 10 #index of high strain non-inclusive
-m0 = 100000 #initial guess
-x = np.zeros( (higheps - loweps), dtype=float)
-x = GK_strains[loweps:higheps] #0 to 2% inclusive
-
-for itemp in range(GK_num_temps):
-	y = Me_stress[itemp, loweps:higheps]
-	young[itemp],cov,infodict,mesg,ier = leastsq(resid, m0, args=(x, y), full_output=True)
-	print 'At T = '+ str(GK_temps[itemp])+ ' Young\'s modulus is '+ str(young[itemp])
-
-## ## ## Save young's modulus to file
-np.save('post/post.young.npy', young)
